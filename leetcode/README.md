@@ -2,6 +2,4 @@
 
 Collection of exercises from leetcode from an aspiring software engineer without a formal CS education.
 
-This repository contains exercises that have been solved: 
-* with _some help and inspiration_ from the Interwebs (the majority)
-* by 'own' accord which may or may not have taken longer time than it should have
+Exercises in which runtime was aced (100%) in the first implementation: 14, 20, 27, 28, 58, 66, 67
