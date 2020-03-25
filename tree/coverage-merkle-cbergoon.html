@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<!-- saved from url=(0098)file:///private/var/folders/x1/w4b3y3k54x36365bqwr7m1hc0000gn/T/cover226633886/coverage.html#file0 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/cbergoon/merkletree/merkle_tree.go (85.9%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: block;">// Copyright 2017 Cameron Bergoon
+// Licensed under the MIT License, see LICENCE file for details.
+
+package merkletree
+
+import (
+        "bytes"
+        "crypto/sha256"
+        "errors"
+        "fmt"
+        "hash"
+)
+
+//Content represents the data that is stored and verified by the tree. A type that
+//implements this interface can be used as an item in the tree.
+type Content interface {
+        CalculateHash() ([]byte, error)
+        Equals(other Content) (bool, error)
+}
+
+//MerkleTree is the container for the tree. It holds a pointer to the root of the tree,
+//a list of pointers to the leaf nodes, and the merkle root.
+type MerkleTree struct {
+        Root         *Node
+        merkleRoot   []byte
+        Leafs        []*Node
+        hashStrategy func() hash.Hash
+}
+
+//Node represents a node, root, or leaf in the tree. It stores pointers to its immediate
+//relationships, a hash, the content stored if it is a leaf, and other metadata.
+type Node struct {
+        Tree   *MerkleTree
+        Parent *Node
+        Left   *Node
+        Right  *Node
+        leaf   bool
+        dup    bool
+        Hash   []byte
+        C      Content
+}
+
+//verifyNode walks down the tree until hitting a leaf, calculating the hash at each level
+//and returning the resulting hash of Node n.
+func (n *Node) verifyNode() ([]byte, error) <span class="cov8" title="300">{
+        if n.leaf </span><span class="cov8" title="160">{
+                return n.C.CalculateHash()
+        }</span>
+        <span class="cov7" title="140">rightBytes, err := n.Right.verifyNode()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov7" title="140">leftBytes, err := n.Left.verifyNode()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov7" title="140">h := n.Tree.hashStrategy()
+        if _, err := h.Write(append(leftBytes, rightBytes...)); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov7" title="140">return h.Sum(nil), nil</span>
+}
+
+//calculateNodeHash is a helper function that calculates the hash of the node.
+func (n *Node) calculateNodeHash() ([]byte, error) <span class="cov8" title="282">{
+        if n.leaf </span><span class="cov7" title="138">{
+                return n.C.CalculateHash()
+        }</span>
+
+        <span class="cov7" title="144">h := n.Tree.hashStrategy()
+        if _, err := h.Write(append(n.Left.Hash, n.Right.Hash...)); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov7" title="144">return h.Sum(nil), nil</span>
+}
+
+//NewTree creates a new Merkle Tree using the content cs.
+func NewTree(cs []Content) (*MerkleTree, error) <span class="cov6" title="39">{
+        var defaultHashStrategy = sha256.New
+        t := &amp;MerkleTree{
+                hashStrategy: defaultHashStrategy,
+        }
+        root, leafs, err := buildWithContent(cs, t)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov6" title="39">t.Root = root
+        t.Leafs = leafs
+        t.merkleRoot = root.Hash
+        return t, nil</span>
+}
+
+//NewTreeWithHashStrategy creates a new Merkle Tree using the content cs using the provided hash
+//strategy. Note that the hash type used in the type that implements the Content interface must
+//match the hash type profided to the tree.
+func NewTreeWithHashStrategy(cs []Content, hashStrategy func() hash.Hash) (*MerkleTree, error) <span class="cov6" title="44">{
+        t := &amp;MerkleTree{
+                hashStrategy: hashStrategy,
+        }
+        root, leafs, err := buildWithContent(cs, t)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov6" title="44">t.Root = root
+        t.Leafs = leafs
+        t.merkleRoot = root.Hash
+        return t, nil</span>
+}
+
+// GetMerklePath: Get Merkle path and indexes(left leaf or right leaf)
+func (m *MerkleTree) GetMerklePath(content Content) ([][]byte, []int64, error) <span class="cov6" title="58">{
+        for _, current := range m.Leafs </span><span class="cov8" title="224">{
+                ok, err := current.C.Equals(content)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, nil, err
+                }</span>
+
+                <span class="cov8" title="224">if ok </span><span class="cov6" title="58">{
+                        currentParent := current.Parent
+                        var merklePath [][]byte
+                        var index []int64
+                        for currentParent != nil </span><span class="cov8" title="178">{
+                                if bytes.Equal(currentParent.Left.Hash, current.Hash) </span><span class="cov7" title="106">{
+                                        merklePath = append(merklePath, currentParent.Right.Hash)
+                                        index = append(index, 1) // right leaf
+                                }</span> else<span class="cov6" title="72"> {
+                                        merklePath = append(merklePath, currentParent.Left.Hash)
+                                        index = append(index, 0) // left leaf
+                                }</span>
+                                <span class="cov8" title="178">current = currentParent
+                                currentParent = currentParent.Parent</span>
+                        }
+                        <span class="cov6" title="58">return merklePath, index, nil</span>
+                }
+        }
+        <span class="cov0" title="0">return nil, nil, nil</span>
+}
+
+//buildWithContent is a helper function that for a given set of Contents, generates a
+//corresponding tree and returns the root node, a list of leaf nodes, and a possible error.
+//Returns an error if cs contains no Contents.
+func buildWithContent(cs []Content, t *MerkleTree) (*Node, []*Node, error) <span class="cov7" title="111">{
+        if len(cs) == 0 </span><span class="cov0" title="0">{
+                return nil, nil, errors.New("error: cannot construct tree with no content")
+        }</span>
+        <span class="cov7" title="111">var leafs []*Node
+        for _, c := range cs </span><span class="cov9" title="653">{
+                hash, err := c.CalculateHash()
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, nil, err
+                }</span>
+
+                <span class="cov9" title="653">leafs = append(leafs, &amp;Node{
+                        Hash: hash,
+                        C:    c,
+                        leaf: true,
+                        Tree: t,
+                })</span>
+        }
+        <span class="cov7" title="111">if len(leafs)%2 == 1 </span><span class="cov6" title="55">{
+                duplicate := &amp;Node{
+                        Hash: leafs[len(leafs)-1].Hash,
+                        C:    leafs[len(leafs)-1].C,
+                        leaf: true,
+                        dup:  true,
+                        Tree: t,
+                }
+                leafs = append(leafs, duplicate)
+        }</span>
+        <span class="cov7" title="111">root, err := buildIntermediate(leafs, t)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, nil, err
+        }</span>
+
+        <span class="cov7" title="111">return root, leafs, nil</span>
+}
+
+//buildIntermediate is a helper function that for a given list of leaf nodes, constructs
+//the intermediate and root levels of the tree. Returns the resulting root node of the tree.
+func buildIntermediate(nl []*Node, t *MerkleTree) (*Node, error) <span class="cov8" title="310">{
+        var nodes []*Node
+        for i := 0; i &lt; len(nl); i += 2 </span><span class="cov10" title="662">{
+                h := t.hashStrategy()
+                var left, right int = i, i + 1 // i = 0 -&gt; left = 0, right = 1; i = 2 -&gt; left = 2, right = 3
+                if i+1 == len(nl) </span><span class="cov6" title="65">{            // when reached the last leaf, duplicate the left one
+                        right = i
+                }</span>
+                <span class="cov10" title="662">chash := append(nl[left].Hash, nl[right].Hash...)
+                if _, err := h.Write(chash); err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov10" title="662">n := &amp;Node{
+                        Left:  nl[left],
+                        Right: nl[right],
+                        Hash:  h.Sum(nil),
+                        Tree:  t,
+                }
+                nodes = append(nodes, n)
+                nl[left].Parent = n
+                nl[right].Parent = n
+                if len(nl) == 2 </span><span class="cov7" title="111">{
+                        return n, nil
+                }</span>
+        }
+        <span class="cov8" title="199">return buildIntermediate(nodes, t)</span>
+}
+
+//MerkleRoot returns the unverified Merkle Root (hash of the root node) of the tree.
+func (m *MerkleTree) MerkleRoot() []byte <span class="cov7" title="101">{
+        return m.merkleRoot
+}</span>
+
+//RebuildTree is a helper function that will rebuild the tree reusing only the content that
+//it holds in the leaves.
+func (m *MerkleTree) RebuildTree() error <span class="cov5" title="20">{
+        var cs []Content
+        for _, c := range m.Leafs </span><span class="cov7" title="128">{
+                cs = append(cs, c.C)
+        }</span>
+        <span class="cov5" title="20">root, leafs, err := buildWithContent(cs, m)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov5" title="20">m.Root = root
+        m.Leafs = leafs
+        m.merkleRoot = root.Hash
+        return nil</span>
+}
+
+//RebuildTreeWith replaces the content of the tree and does a complete rebuild; while the root of
+//the tree will be replaced the MerkleTree completely survives this operation. Returns an error if the
+//list of content cs contains no entries.
+func (m *MerkleTree) RebuildTreeWith(cs []Content) error <span class="cov3" title="8">{
+        root, leafs, err := buildWithContent(cs, m)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov3" title="8">m.Root = root
+        m.Leafs = leafs
+        m.merkleRoot = root.Hash
+        return nil</span>
+}
+
+//VerifyTree verify tree validates the hashes at each level of the tree and returns true if the
+//resulting hash at the root of the tree matches the resulting root hash; returns false otherwise.
+func (m *MerkleTree) VerifyTree() (bool, error) <span class="cov5" title="20">{
+        calculatedMerkleRoot, err := m.Root.verifyNode()
+        if err != nil </span><span class="cov0" title="0">{
+                return false, err
+        }</span>
+
+        <span class="cov5" title="20">if bytes.Compare(m.merkleRoot, calculatedMerkleRoot) == 0 </span><span class="cov4" title="10">{
+                return true, nil
+        }</span>
+        <span class="cov4" title="10">return false, nil</span>
+}
+
+//VerifyContent indicates whether a given content is in the tree and the hashes are valid for that content.
+//Returns true if the expected Merkle Root is equivalent to the Merkle root calculated on the critical path
+//for a given content. Returns true if valid and false otherwise.
+func (m *MerkleTree) VerifyContent(content Content) (bool, error) <span class="cov6" title="50">{
+        for _, l := range m.Leafs </span><span class="cov7" title="134">{
+                ok, err := l.C.Equals(content)
+                if err != nil </span><span class="cov0" title="0">{
+                        return false, err
+                }</span>
+
+                <span class="cov7" title="134">if ok </span><span class="cov6" title="40">{
+                        currentParent := l.Parent
+                        for currentParent != nil </span><span class="cov7" title="112">{
+                                h := m.hashStrategy()
+                                rightBytes, err := currentParent.Right.calculateNodeHash()
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return false, err
+                                }</span>
+
+                                <span class="cov7" title="112">leftBytes, err := currentParent.Left.calculateNodeHash()
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return false, err
+                                }</span>
+
+                                <span class="cov7" title="112">if _, err := h.Write(append(leftBytes, rightBytes...)); err != nil </span><span class="cov0" title="0">{
+                                        return false, err
+                                }</span>
+                                <span class="cov7" title="112">if bytes.Compare(h.Sum(nil), currentParent.Hash) != 0 </span><span class="cov4" title="10">{
+                                        return false, nil
+                                }</span>
+                                <span class="cov7" title="102">currentParent = currentParent.Parent</span>
+                        }
+                        <span class="cov5" title="30">return true, nil</span>
+                }
+        }
+        <span class="cov4" title="10">return false, nil</span>
+}
+
+//String returns a string representation of the node.
+func (n *Node) String() string <span class="cov6" title="64">{
+        return fmt.Sprintf("%t %t %v %s", n.leaf, n.dup, n.Hash, n.C)
+}</span>
+
+//String returns a string representation of the tree. Only leaf nodes are included
+//in the output.
+func (m *MerkleTree) String() string <span class="cov4" title="10">{
+        s := ""
+        for _, l := range m.Leafs </span><span class="cov6" title="64">{
+                s += fmt.Sprint(l)
+                s += "\n"
+        }</span>
+        <span class="cov4" title="10">return s</span>
+}
+</pre>
+		
+		</div>
+	
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+
+</body></html>
