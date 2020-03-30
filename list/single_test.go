@@ -31,11 +31,13 @@ func TestAppend(t *testing.T) {
 }
 
 func TestPrepend(t *testing.T) {
-	expected := []int{1, 2, 3}
+	expected := []int{1, 2, 3, 4, 5}
 
 	s := list.New()
-	s.Append(&list.Element{Data: 2})
-	s.Append(&list.Element{Data: 3})
+	data := []int{2, 3, 4, 5}
+	for _, v := range data {
+		s.Append(&list.Element{Data: v})
+	}
 	s.Prepend(&list.Element{Data: 1})
 
 	actual := listdata(s)
@@ -44,19 +46,57 @@ func TestPrepend(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	expected := []int{1, 2, 4}
-
+	data := []int{1, 2, 3, 4, 5}
 	s := list.New()
-	s.Append(&list.Element{Data: 1})
-	s.Append(&list.Element{Data: 2})
-	toDelete := &list.Element{Data: 3}
-	s.Append(toDelete)
-	s.Append(&list.Element{Data: 4})
-	s.Remove(toDelete)
+	del := &list.Element{}
 
-	actual := listdata(s)
+	// remove first element
+	// expect 1 removed
+	exp1 := []int{2, 3, 4, 5}
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 1 {
+			del = e
+		}
+	}
+	s.Remove(del)
+	res1 := listdata(s)
+	assert.Equal(t, exp1, res1)
 
-	assert.Equal(t, expected, actual)
+	// reset list
+	s = list.New()
+
+	// remove mid element
+	// expect 3 removed
+	exp2 := []int{1, 2, 4, 5}
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 3 {
+			del = e
+		}
+	}
+	s.Remove(del)
+	res2 := listdata(s)
+	assert.Equal(t, exp2, res2)
+
+	// reset list
+	s = list.New()
+
+	// remove last element
+	// expect 5 removed
+	exp3 := []int{1, 2, 3, 4}
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 5 {
+			del = e
+		}
+	}
+	s.Remove(del)
+	res3 := listdata(s)
+	assert.Equal(t, exp3, res3)
 }
 
 func listdata(s *list.SingleLink) []int {
