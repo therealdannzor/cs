@@ -78,6 +78,12 @@ func (s *SingleLink) Remove(del *Element) {
 		currElement = i
 	}
 
+	// if the head is the element to remove
+	if h := s.First(); del == h {
+		s.head = h.next
+		return
+	}
+
 	if currElement.Next() == del {
 		currElement.next = del.next
 
