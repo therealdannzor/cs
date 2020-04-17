@@ -136,6 +136,16 @@ func TestFind(t *testing.T) {
 	exp3 := 4
 	res3 := s.Find(thirdCase)
 	assert.Equal(t, exp3, res3)
+
+	// find an element that does not exist
+	exp4 := -1
+	res4 := s.Find(&list.Element{Data: 9})
+	assert.Equal(t, exp4, res4)
+
+	// reset list and look for (any) element
+	s = list.New()
+	res5 := s.Find(firstCase)
+	assert.Equal(t, exp4, res5)
 }
 
 func listdata(s *list.SingleLink) []int {
