@@ -114,6 +114,61 @@ func (s SingleLink) Find(e *Element) int {
 	return -1
 }
 
+// RemoveBefore removes the element before the given element `e`
+// and returns the removed element. If it does not exist or the
+// operation is not performed successfully, we return nil.
+func (s *SingleLink) RemoveBefore(e *Element) *Element {
+	if ok := s.minOneElement(); !ok {
+		return nil
+	}
+
+	// there is no element before the first one, bail out
+	if s.head == e {
+		return nil
+	}
+
+	/* Should we want to remove the elmement which happens to
+	*  be the head, we just move the pointer one step
+	*
+	* 1.    [ 0x0 ] -> [ 0x1 ]
+	*          ^          ^
+	*         head        e
+	*
+	* 2.    [ 0x1 ]
+	*          ^
+	*         head
+	 */
+	if s.head.next == e {
+		rm := s.head
+		s.head = s.head.next
+		return rm
+	}
+
+	/* If we do not seek to remove the element before the second item in the
+	*  list we introduce `trail`: a trailing pointer to backtrack two steps behind
+	*  the iterator i. Should we find the item `e`, we link `trail` to `e` which means
+	*  we skip over the item in between both of them.
+	* 1.    [ 0x0 ] -> [ 0x1 ] -> [ 0x2 ] -> [ 0x3 ]
+	*          ^          ^          ^
+	*        trail      before e     e
+	*        (head)     (delete)    (i)
+	*
+	*
+	* 2.    [ 0x0 ] -> [ 0x2 ] -> [ 0x3 ]
+	 */
+	trail := s.First()
+	for i := trail.next.next; i != nil; i = i.Next() {
+		if i == e {
+			rm := trail.next
+			trail.next = i
+			return rm
+		}
+		trail = trail.next
+	}
+
+	return nil
+}
+
 func (s *SingleLink) minOneElement() bool {
 	if first := s.head; first == nil {
 		return false
@@ -123,5 +178,4 @@ func (s *SingleLink) minOneElement() bool {
 }
 
 // TODO:
-// RemoveBefore: removes node n before an element in list
 // RemoveAfter: removes node n after an element in list
