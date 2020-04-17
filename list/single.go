@@ -68,32 +68,36 @@ func (s *SingleLink) Prepend(e *Element) {
 	return
 }
 
-func (s *SingleLink) Remove(del *Element) {
-	if ok := s.minOneElement(); !ok {
-		return
+func (s *SingleLink) Remove(del *Element) *Element {
+	if del == nil {
+		return nil
 	}
-
-	var currElement *Element
-	for i := s.First(); i != nil && i != del; i = i.Next() {
-		currElement = i
+	if ok := s.minOneElement(); !ok {
+		return nil
 	}
 
 	// if the head is the element to remove
 	if h := s.First(); del == h {
 		s.head = h.next
-		return
+		return del
 	}
 
-	if currElement.Next() == del {
-		currElement.next = del.next
+	var curr *Element
+	for i := s.First(); i != nil && i != del; i = i.Next() {
+		curr = i
+	}
+
+	if curr.Next() == del {
+		curr.next = del.next
 
 		// avoid memory leaks
 		del.next = nil
 
 		s.len--
+		return del
 	}
 
-	return
+	return nil
 }
 
 // Find finds the index of an element. If it does not exist or

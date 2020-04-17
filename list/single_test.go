@@ -47,12 +47,13 @@ func TestPrepend(t *testing.T) {
 
 func TestRemove(t *testing.T) {
 	data := []int{1, 2, 3, 4, 5}
-	s := list.New()
-	del := &list.Element{}
 
-	// remove first element
-	// expect 1 removed
+	// CASE 1: remove first element (1)
+	s := list.New()
 	exp1 := []int{2, 3, 4, 5}
+	removed1 := 1
+
+	del := &list.Element{}
 	for _, num := range data {
 		e := &list.Element{Data: num}
 		s.Append(e)
@@ -60,16 +61,15 @@ func TestRemove(t *testing.T) {
 			del = e
 		}
 	}
-	s.Remove(del)
+	e1 := s.Remove(del)
 	res1 := listdata(s)
+	assert.Equal(t, removed1, e1.Data)
 	assert.Equal(t, exp1, res1)
 
-	// reset list
+	// CASE 2: remove mid element (3)
 	s = list.New()
-
-	// remove mid element
-	// expect 3 removed
 	exp2 := []int{1, 2, 4, 5}
+	removed2 := 3
 	for _, num := range data {
 		e := &list.Element{Data: num}
 		s.Append(e)
@@ -77,16 +77,15 @@ func TestRemove(t *testing.T) {
 			del = e
 		}
 	}
-	s.Remove(del)
+	e2 := s.Remove(del)
 	res2 := listdata(s)
+	assert.Equal(t, removed2, e2.Data)
 	assert.Equal(t, exp2, res2)
 
-	// reset list
+	// CASE 3: remove last element (5)
 	s = list.New()
-
-	// remove last element
-	// expect 5 removed
 	exp3 := []int{1, 2, 3, 4}
+	removed3 := 5
 	for _, num := range data {
 		e := &list.Element{Data: num}
 		s.Append(e)
@@ -94,9 +93,24 @@ func TestRemove(t *testing.T) {
 			del = e
 		}
 	}
-	s.Remove(del)
+	e3 := s.Remove(del)
 	res3 := listdata(s)
+	assert.Equal(t, removed3, e3.Data)
 	assert.Equal(t, exp3, res3)
+
+	// CASE 4: remove an element not in the list
+	el := &list.Element{Data: 9}
+	e4 := s.Remove(el)
+	assert.Nil(t, e4)
+
+	// CASE 5: remove a nil element
+	e5 := s.Remove(nil)
+	assert.Nil(t, e5)
+
+	// CASE 6: remove an element from an empty list
+	s = list.New()
+	e6 := s.Remove(el)
+	assert.Nil(t, e6)
 }
 
 func TestFind(t *testing.T) {
