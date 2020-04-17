@@ -79,6 +79,7 @@ func (s *SingleLink) Remove(del *Element) *Element {
 	// if the head is the element to remove
 	if h := s.First(); del == h {
 		s.head = h.next
+		s.len--
 		return del
 	}
 
@@ -145,6 +146,7 @@ func (s *SingleLink) RemoveBefore(e *Element) *Element {
 	if s.head.next == e {
 		rm := s.head
 		s.head = s.head.next
+		s.len--
 		return rm
 	}
 
@@ -165,6 +167,7 @@ func (s *SingleLink) RemoveBefore(e *Element) *Element {
 		if i == e {
 			rm := trail.next
 			trail.next = i
+			s.len--
 			return rm
 		}
 		trail = trail.next
