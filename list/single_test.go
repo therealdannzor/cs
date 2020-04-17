@@ -148,6 +148,93 @@ func TestFind(t *testing.T) {
 	assert.Equal(t, exp4, res5)
 }
 
+func TestRemoveBefore(t *testing.T) {
+	data := []int{1, 2, 3, 4, 5}
+
+	// new list: CASE 1 (remove the element before 2)
+	s := list.New()
+	item := &list.Element{}
+
+	// expect 1 removed
+	exp1 := []int{2, 3, 4, 5}
+	removed1 := 1
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 2 {
+			item = e
+		}
+	}
+	e1 := s.RemoveBefore(item)
+	res1 := listdata(s)
+	assert.Equal(t, removed1, e1.Data)
+	assert.Equal(t, exp1, res1)
+
+	// reset list: CASE 2 (remove the element before 3)
+	s = list.New()
+
+	// expect 2 removed
+	exp2 := []int{1, 3, 4, 5}
+	removed2 := 2
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 3 {
+			item = e
+		}
+	}
+	e2 := s.RemoveBefore(item)
+	res2 := listdata(s)
+	assert.Equal(t, removed2, e2.Data)
+	assert.Equal(t, exp2, res2)
+
+	// reset list: CASE 3 (remove the element before 5)
+	s = list.New()
+
+	// expect 4 removed
+	exp3 := []int{1, 2, 3, 5}
+	removed3 := 4
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 5 {
+			item = e
+		}
+	}
+	e3 := s.RemoveBefore(item)
+	res3 := listdata(s)
+	assert.Equal(t, removed3, e3.Data)
+	assert.Equal(t, exp3, res3)
+
+	// reset list: CASE 4 (non-nil param element which does not exist in the list)
+	s = list.New()
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+	}
+
+	exp4 := data
+	el := &list.Element{Data: 9}
+	e4 := s.RemoveBefore(el)
+	res4 := listdata(s)
+	assert.Nil(t, e4)
+	assert.Equal(t, exp4, res4)
+
+	// reset list: CASE 5 (empty list)
+	s = list.New()
+
+	e5 := s.RemoveBefore(el)
+	res5 := listdata(s)
+	assert.Nil(t, e5)
+	assert.Nil(t, res5)
+
+	// reset list: CASE 6 (nil param element)
+	e6 := s.RemoveBefore(nil)
+	res6 := listdata(s)
+	assert.Nil(t, e6)
+	assert.Nil(t, res6)
+}
+
 func listdata(s *list.SingleLink) []int {
 	var a []int
 	for e := s.First(); e != nil; e = e.Next() {
