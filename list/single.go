@@ -176,6 +176,50 @@ func (s *SingleLink) RemoveBefore(e *Element) *Element {
 	return nil
 }
 
+func (s *SingleLink) RemoveAfter(e *Element) *Element {
+	if e == nil {
+		return nil
+	}
+
+	// there is no element to remove
+	if e.next == nil {
+		return nil
+	}
+
+	if ok := s.minOneElement(); !ok {
+		return nil
+	}
+
+	var target *Element
+	for i := s.First(); i != nil; i = i.Next() {
+		if i == e {
+			target = i
+			break
+		}
+	}
+
+	if target == nil {
+		// we never found our element
+		return nil
+	}
+
+	/* 1.    [ 0x0 ] ----> [ 0x1 ] ----> [ 0x2 ] ----> [ 0x3 ]
+	*                         ^             ^             ^
+	*                       target     target.next   target.next.next
+	*                                  (to remove)
+	*
+	*
+	* 2.     [ 0x0 ] ----> [ 0x1 ] ----> [ 0x3 ]
+	*                        ^             ^
+	*                      target     target.next
+	*
+	 */
+	removed := target.next
+	target.next = target.next.next
+
+	return removed
+}
+
 func (s *SingleLink) minOneElement() bool {
 	if first := s.head; first == nil {
 		return false
@@ -183,6 +227,3 @@ func (s *SingleLink) minOneElement() bool {
 
 	return true
 }
-
-// TODO:
-// RemoveAfter: removes node n after an element in list
