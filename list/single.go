@@ -49,8 +49,6 @@ func (s *SingleLink) Append(e *Element) {
 
 	curr.next = e
 	s.len++
-
-	return
 }
 
 // Prepend adds an element to the front of a list
@@ -65,8 +63,6 @@ func (s *SingleLink) Prepend(e *Element) {
 	s.head = e
 	e.next = curr
 	s.len++
-
-	return
 }
 
 // Remove removes an element from the list and returns the removed
