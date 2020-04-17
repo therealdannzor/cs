@@ -96,6 +96,24 @@ func (s *SingleLink) Remove(del *Element) {
 	return
 }
 
+// Find finds the index of an element. If it does not exist or
+// if the list is empty, it returns -1
+func (s SingleLink) Find(e *Element) int {
+	if ok := s.minOneElement(); !ok {
+		return -1
+	}
+
+	pos := 0
+	for i := s.First(); i != nil; i = i.Next() {
+		if i == e {
+			return pos
+		}
+		pos++
+	}
+
+	return -1
+}
+
 func (s *SingleLink) minOneElement() bool {
 	if first := s.head; first == nil {
 		return false
@@ -105,6 +123,5 @@ func (s *SingleLink) minOneElement() bool {
 }
 
 // TODO:
-// GetPos: get index for node n in list
 // RemoveBefore: removes node n before an element in list
 // RemoveAfter: removes node n after an element in list
