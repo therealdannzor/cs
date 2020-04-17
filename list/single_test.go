@@ -99,6 +99,45 @@ func TestRemove(t *testing.T) {
 	assert.Equal(t, exp3, res3)
 }
 
+func TestFind(t *testing.T) {
+	data := []int{1, 2, 3, 4, 5}
+	s := list.New()
+	firstCase := &list.Element{}
+	secondCase := &list.Element{}
+	thirdCase := &list.Element{}
+
+	// find first element (1)
+	// expect index 0
+	exp1 := 0
+	for _, num := range data {
+		e := &list.Element{Data: num}
+		s.Append(e)
+		if num == 1 {
+			firstCase = e
+		}
+		if num == 3 {
+			secondCase = e
+		}
+		if num == 5 {
+			thirdCase = e
+		}
+	}
+	res1 := s.Find(firstCase)
+	assert.Equal(t, exp1, res1)
+
+	// find mid element (3)
+	// expect index 2
+	exp2 := 2
+	res2 := s.Find(secondCase)
+	assert.Equal(t, exp2, res2)
+
+	// find last element (5)
+	// expect index 4
+	exp3 := 4
+	res3 := s.Find(thirdCase)
+	assert.Equal(t, exp3, res3)
+}
+
 func listdata(s *list.SingleLink) []int {
 	var a []int
 	for e := s.First(); e != nil; e = e.Next() {
