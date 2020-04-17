@@ -329,7 +329,7 @@ func TestRemoveAfter(t *testing.T) {
 	assert.Nil(t, res5)
 
 	// reset list: CASE 6 (nil param element)
-	e6 := s.RemoveBefore(nil)
+	e6 := s.RemoveAfter(nil)
 	res6 := listdata(s)
 	assert.Nil(t, e6)
 	assert.Nil(t, res6)

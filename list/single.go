@@ -34,6 +34,7 @@ func (s *SingleLink) First() *Element {
 	return s.head
 }
 
+// Appends adds an element to the back of a list
 func (s *SingleLink) Append(e *Element) {
 	if ok := s.minOneElement(); !ok {
 		s.head = e
@@ -41,17 +42,18 @@ func (s *SingleLink) Append(e *Element) {
 		return
 	}
 
-	currElement := s.First()
-	for i := s.First(); i != nil; i = i.Next() {
-		currElement = i
+	curr := s.First()
+	for i := s.First(); i != nil; i = i.next {
+		curr = i
 	}
 
-	currElement.next = e
+	curr.next = e
 	s.len++
 
 	return
 }
 
+// Prepend adds an element to the front of a list
 func (s *SingleLink) Prepend(e *Element) {
 	if ok := s.minOneElement(); !ok {
 		s.head = e
@@ -62,12 +64,13 @@ func (s *SingleLink) Prepend(e *Element) {
 	curr := s.First()
 	s.head = e
 	e.next = curr
-
 	s.len++
 
 	return
 }
 
+// Remove removes an element from the list and returns the removed
+// element if it was done successfully. In any other case it returns nil.
 func (s *SingleLink) Remove(del *Element) *Element {
 	if del == nil {
 		return nil
@@ -84,11 +87,11 @@ func (s *SingleLink) Remove(del *Element) *Element {
 	}
 
 	var curr *Element
-	for i := s.First(); i != nil && i != del; i = i.Next() {
+	for i := s.First(); i != nil && i != del; i = i.next {
 		curr = i
 	}
 
-	if curr.Next() == del {
+	if curr.next == del {
 		curr.next = del.next
 
 		// avoid memory leaks
@@ -176,6 +179,9 @@ func (s *SingleLink) RemoveBefore(e *Element) *Element {
 	return nil
 }
 
+// RemoveAfter removes the element after a given element `e`
+// and returns the removed element. If it does not exist or the
+// operation is not performed successfully, we return nil.
 func (s *SingleLink) RemoveAfter(e *Element) *Element {
 	if e == nil {
 		return nil
@@ -220,6 +226,8 @@ func (s *SingleLink) RemoveAfter(e *Element) *Element {
 	return removed
 }
 
+// minOneElement is a helper method which asserts that the list
+// has at least one element
 func (s *SingleLink) minOneElement() bool {
 	if first := s.head; first == nil {
 		return false
