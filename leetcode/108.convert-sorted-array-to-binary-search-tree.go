@@ -84,15 +84,16 @@ func sortedArrayToBST(nums []int) *TreeNode {
 // find gets the mid element of a slice and
 // returns the index and value of it
 func find(nums []int) (int, int) {
-	var mid int
+	var index int
 	if len(nums) < 1 {
 		return -1, -1
 	}
-	if len(nums)%2 == 0 {
-		mid = len(nums)/2 + 1
-	}
-	mid = len(nums) / 2
-	return mid, nums[mid]
+
+	// this never overflows like the high-low implementations:
+	// https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html
+	index = len(nums) / 2
+
+	return index, nums[index]
 }
 
 // @lc code=end
