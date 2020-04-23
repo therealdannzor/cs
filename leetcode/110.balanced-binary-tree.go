@@ -56,12 +56,13 @@
  */
 
 // @lc code=start
-
+// We base this problem on the solution aproach presented in https://www.youtube.com/watch?v=LU4fGD-fgJQ.
+// Each node is asked two questions:
+//  1) What is your height?
+//  2) Are you balanced?
+//
+// The answers are propagated up to each parent and checked throughout all generations of the tree.
 func isBalanced(root *TreeNode) bool {
-	if root == nil {
-		return true
-	}
-
 	_, res := isBaseBalance(root)
 	if res {
 		return true
@@ -71,7 +72,8 @@ func isBalanced(root *TreeNode) bool {
 }
 
 // isBaseBalance checks the base case where a leaf is balanced if
-// and only if it is empty or has no children
+// and only if it is empty (nil), or have one or two children which
+// in turn both are balanced _and_ within a height difference of 1.
 func isBaseBalance(root *TreeNode) (int, bool) {
 	if root == nil {
 		return 0, true
